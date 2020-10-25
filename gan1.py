@@ -116,6 +116,9 @@ print(gan.summary())
 #################################################################
 
 #training the model
+#training the model
+gen_loss_all = []
+dis_loss_all = []
 for epoch in range(EPOCHS):
     for batch in range(STEPS_PER_EPOCH):
         input_noise = np.random.normal(0,1, size=(BATCH_SIZE, LATENT_DIM))
@@ -123,12 +126,12 @@ for epoch in range(EPOCHS):
         Xreal = Xtrain[np.random.randint(0, Xtrain.shape[0], size=BATCH_SIZE)]
         X = np.concatenate((Xreal, Xfake))
         y = np.zeros(2*BATCH_SIZE)
-        y[:BATCH_SIZE] = 0.9 #label smoothing
+        y[:BATCH_SIZE] = 0.9 #labe smoothing
         discriminator_loss = discriminator.train_on_batch(X, y)
+        dis_loss_all.append(discriminator_loss)
         yGenerator = np.ones(BATCH_SIZE)
         generator_loss = gan.train_on_batch(input_noise, yGenerator)
+        gen_loss_all.append(generator_loss)
     print(f'Epoch: {epoch}\tDiscriminator Loss: {discriminator_loss}\tGenreator Loss: {generator_loss}')
-    if epoch%args['n_epoch']==0 and epoch!=0:
+    if epoch%60==0 and epoch!=0:
         img_output(np.random.normal(0, 1, size=(100, LATENT_DIM)))
-        generator.save('gen{}.h5'.format(epoch))
-        discriminator.save('dis{}.h5'.format(epoch))
